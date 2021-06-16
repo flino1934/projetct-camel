@@ -17,14 +17,22 @@ public class RotaPedidos {
 				from("file:pedidos?delay=5s&noop=true") // de
 					//.log("${id}")// vai passar as informações do log da msg ("dado que foi enviado")
 					//.log("${body}")//vai mostrar o corpo da msg que esta sendo transitada
-					.log("${id} - ${body}")	
-					.marshal().xmljson()//vai transformar de xml para json
+					.split()//vamos dividir o conteudo do xml para facilitar a leitura feita pelo camel
+						.xpath("/pedido/itens/item")
+					.log("${body}")	
+					.filter()
+						.xpath("/item/formato[text()='EBOOK']")//filtrando os dados
+					//.log("${id} - ${body}")	
+					.log("${id}")	
+					.marshal()
+						.xmljson()//vai transformar de xml para json
 					.log("${body}")
-					.setHeader("CamelFileName", simple("${file:name}.json"))//vai mudar o nome do arquivo
+					.setHeader("CamelFileName", simple("${file:name.noext}.json"))//vai mudar o nome do arquivo
 						.to("file:saida");// para
 
 			}
 		});
+
 
         context.start(); //aqui camel realmente começa a trabalhar
         System.out.println("passou");
